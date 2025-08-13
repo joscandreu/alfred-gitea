@@ -1,3 +1,5 @@
+# MIGRATED to https://codefloe.com/pat-s/alfred-gitea
+
 # alfred-gitea
 
 - [alfred-gitea](#alfred-gitea)
