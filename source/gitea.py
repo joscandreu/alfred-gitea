@@ -1,5 +1,6 @@
 # encoding: utf-8
 # from __future__ import unicode_literals
+import os
 import sys
 import argparse
 from workflow import Workflow3, ICON_WEB, ICON_ERROR, ICON_WARNING, ICON_INFO, web, PasswordNotFound, util
@@ -47,6 +48,12 @@ def main(wf):
         return 0  # 0 means script exited cleanly
 
     if args.client_p12:
+        if not os.path.isfile(args.client_p12):
+            wf.add_item('P12 file not found',
+                        'The path does not exist: ' + args.client_p12,
+                        valid=False, icon=ICON_ERROR)
+            wf.send_feedback()
+            return 1
         log.info("Setting PKCS12 path")
         wf.settings['client_p12_path'] = args.client_p12
         return 0
@@ -57,6 +64,12 @@ def main(wf):
         return 0
 
     if args.ca_bundle:
+        if not os.path.isfile(args.ca_bundle):
+            wf.add_item('CA bundle file not found',
+                        'The path does not exist: ' + args.ca_bundle,
+                        valid=False, icon=ICON_ERROR)
+            wf.send_feedback()
+            return 1
         log.info("Setting CA bundle path")
         wf.settings['ca_bundle_path'] = args.ca_bundle
         return 0

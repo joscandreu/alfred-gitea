@@ -33,29 +33,24 @@ def build_ssl_context(settings, get_password_fn):
 
     if p12_path:
         passphrase = get_password_fn('gitea_p12_passphrase')
-        tmpdir = tempfile.mkdtemp()
-        os.chmod(tmpdir, 0o700)
-        cert_tmp = os.path.join(tmpdir, 'cert.pem')
-        key_tmp = os.path.join(tmpdir, 'key.pem')
-        try:
+        passphrase_bytes = (passphrase + '\n').encode('utf-8')
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cert_tmp = os.path.join(tmpdir, 'cert.pem')
+            key_tmp = os.path.join(tmpdir, 'key.pem')
             subprocess.run(
                 ['/usr/bin/openssl', 'pkcs12',
                  '-in', p12_path,
-                 '-passin', 'pass:' + passphrase,
+                 '-passin', 'stdin',
                  '-nokeys', '-out', cert_tmp],
+                input=passphrase_bytes,
                 check=True, capture_output=True)
             subprocess.run(
                 ['/usr/bin/openssl', 'pkcs12',
                  '-in', p12_path,
-                 '-passin', 'pass:' + passphrase,
+                 '-passin', 'stdin',
                  '-nocerts', '-nodes', '-out', key_tmp],
+                input=passphrase_bytes,
                 check=True, capture_output=True)
             ctx.load_cert_chain(cert_tmp, key_tmp)
-        finally:
-            for f in [cert_tmp, key_tmp]:
-                if os.path.exists(f):
-                    os.unlink(f)
-            if os.path.isdir(tmpdir):
-                os.rmdir(tmpdir)
 
     return ctx
