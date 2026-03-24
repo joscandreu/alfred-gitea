@@ -211,6 +211,84 @@
 				<false/>
 			</dict>
 		</array>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D501</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D502</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D502</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D503</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D504</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D505</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D505</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D506</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D507</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D508</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D508</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D509</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Patrick Schratz</string>
@@ -679,6 +757,201 @@
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>tea set p12</string>
+				<key>subtext</key>
+				<string>Enter the path to your PKCS12 (.p12) identity file and hit ENTER</string>
+				<key>text</key>
+				<string>Set your mTLS client certificate (.p12)</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D501</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python gitea.py --setp12 "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D502</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<false/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>Your PKCS12 certificate path has been saved.</string>
+				<key>title</key>
+				<string>Saved mTLS certificate path</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D503</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>tea set p12pass</string>
+				<key>subtext</key>
+				<string>Enter the passphrase for your .p12 file and hit ENTER (stored in Keychain)</string>
+				<key>text</key>
+				<string>Set your mTLS PKCS12 passphrase</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D504</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python gitea.py --setp12pass "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D505</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<false/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>Your PKCS12 passphrase has been saved to Keychain.</string>
+				<key>title</key>
+				<string>Saved mTLS passphrase</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D506</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>tea set ca</string>
+				<key>subtext</key>
+				<string>Enter the path to your custom CA bundle (PEM) and hit ENTER</string>
+				<key>text</key>
+				<string>Set your custom CA certificate bundle</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D507</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python gitea.py --setca "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D508</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<false/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>Your custom CA bundle path has been saved.</string>
+				<key>title</key>
+				<string>Saved custom CA bundle path</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D509</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>Setup and Usage
@@ -830,6 +1103,69 @@
 			<integer>25</integer>
 			<key>ypos</key>
 			<integer>290</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D501</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>870</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D502</key>
+		<dict>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>870</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D503</key>
+		<dict>
+			<key>xpos</key>
+			<integer>470</integer>
+			<key>ypos</key>
+			<integer>870</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D504</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>990</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D505</key>
+		<dict>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>990</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D506</key>
+		<dict>
+			<key>xpos</key>
+			<integer>470</integer>
+			<key>ypos</key>
+			<integer>990</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D507</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>1110</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D508</key>
+		<dict>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>1110</integer>
+		</dict>
+		<key>B1C2D3E4-F5A6-B7C8-D9E0-F1A2B3C4D509</key>
+		<dict>
+			<key>xpos</key>
+			<integer>470</integer>
+			<key>ypos</key>
+			<integer>1110</integer>
 		</dict>
 	</dict>
 	<key>variables</key>

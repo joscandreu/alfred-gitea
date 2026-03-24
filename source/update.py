@@ -2,22 +2,23 @@
 from workflow import Workflow, Workflow3, ICON_WEB, ICON_WARNING, ICON_INFO, web, PasswordNotFound
 # from workflow import web, Workflow3, PasswordNotFound
 import mureq
+from tls import build_ssl_context
 
 # log = None
 
 
-def get_projects(api_key, url):
+def get_projects(api_key, url, ssl_context=None):
     """
     Parse all pages of projects
     :return: list
     """
-    return get_project_page(api_key, url, 1, [])
+    return get_project_page(api_key, url, 1, [], ssl_context=ssl_context)
 
 
-def get_project_page(api_key, url, page, list):
+def get_project_page(api_key, url, page, list, ssl_context=None):
     log.info("Calling API page {page}".format(page=page))
     params = dict(token=api_key, per_page=100, page=page, membership='true')
-    r = mureq.get(url, params = params)
+    r = mureq.get(url, params=params, ssl_context=ssl_context)
 
     log.debug('URL: %s', url)
 
@@ -42,7 +43,7 @@ def get_project_page(api_key, url, page, list):
     if page < pages_count + 1:
         log.debug('nextpage', page)
         projects_gitea = get_project_page(
-            api_key, url, page, projects_gitea)
+            api_key, url, page, projects_gitea, ssl_context=ssl_context)
 
     return projects_gitea
 
@@ -52,11 +53,12 @@ def main(wf):
         # Get API key from Keychain
         api_key = wf.get_password('gitea_api_key')
         api_url = wf.settings.get('api_url')
+        ssl_ctx = build_ssl_context(wf.settings, wf.get_password)
 
         # Retrieve projects from cache if available and no more than 600
         # seconds old
         def wrapper():
-            return get_projects(api_key, api_url)
+            return get_projects(api_key, api_url, ssl_context=ssl_ctx)
 
         projects_gitea = wf.cached_data(
             'projects_gitea', wrapper, max_age=3600)

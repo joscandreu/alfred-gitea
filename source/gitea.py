@@ -29,6 +29,9 @@ def main(wf):
     # action with the API key
     parser.add_argument('--setkey', dest='apikey', nargs='?', default=None)
     parser.add_argument('--seturl', dest='apiurl', nargs='?', default=None)
+    parser.add_argument('--setp12', dest='client_p12', nargs='?', default=None)
+    parser.add_argument('--setp12pass', dest='p12_pass', nargs='?', default=None)
+    parser.add_argument('--setca', dest='ca_bundle', nargs='?', default=None)
     parser.add_argument('query', nargs='?', default=None)
     # parse the script's arguments
     args = parser.parse_args(wf.args)
@@ -42,6 +45,21 @@ def main(wf):
         log.info("Setting API Key")
         wf.save_password('gitea_api_key', args.apikey)
         return 0  # 0 means script exited cleanly
+
+    if args.client_p12:
+        log.info("Setting PKCS12 path")
+        wf.settings['client_p12_path'] = args.client_p12
+        return 0
+
+    if args.p12_pass:
+        log.info("Setting PKCS12 passphrase")
+        wf.save_password('gitea_p12_passphrase', args.p12_pass)
+        return 0
+
+    if args.ca_bundle:
+        log.info("Setting CA bundle path")
+        wf.settings['ca_bundle_path'] = args.ca_bundle
+        return 0
 
     ####################################################################
     # Check that we have an API key saved
