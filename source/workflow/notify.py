@@ -228,7 +228,7 @@ def convert_image(inpath, outpath, size):
     # log().debug(cmd)
     with open(os.devnull, "w") as pipe:
         retcode = subprocess.call(
-            cmd, shell=True, stdout=pipe, stderr=subprocess.STDOUT
+            cmd, stdout=pipe, stderr=subprocess.STDOUT
         )
 
     if retcode != 0:

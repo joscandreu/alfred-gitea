@@ -12,14 +12,43 @@
 
 ## Installation
 
-- Download the [alfredworkflow](https://github.com/pat-s/alfred-gitea/releases/download/v1.0.0/Gitea.alfredworkflow) from GitHub
-- Install from [packal](http://www.packal.org/workflow/gitea)
+Build the workflow from this repository and double-click the result to install it in Alfred:
 
-1. Set your Gitea Access Token via `tea set token <token>` or `tea set key <token>` (both do the same)
-2. Set your Gitea URL via `tea set url <url>`.
-   The workflow also works without access token but will be restricted to public repos.
+```sh
+./build.sh   # creates Gitea.alfredworkflow from ./source
+```
 
-The workflow makes calls to the `/users/repos` endpoint and will only list repos which are accessible via the given access token.
+1. Set your Gitea URL via `tea set url https://<host>` (only `https://` URLs are accepted).
+2. Set your Gitea Access Token via `tea set token`.
+   Press &#x23ce; without typing the token to enter it in a hidden dialog (recommended), or pass it directly: `tea set token <token>` (`tea set key` is an alias).
+   The token is stored in the macOS Keychain and sent to Gitea in the `Authorization` header.
+3. If your instance requires a client certificate, see [Client certificates (mutual TLS)](#client-certificates-mutual-tls).
+
+The workflow calls the `/api/v1/repos/search` endpoint and will only list repos which are accessible via the given access token.
+
+### Client certificates (mutual TLS)
+
+Open the workflow in Alfred Preferences, click the `[x]` (Configure Workflow and Variables) button and set:
+
+| Variable      | Value |
+| ------------- | ----- |
+| `client_cert` | Path to your client certificate in PEM format. The file may also contain the private key and intermediate certificates. |
+| `client_key`  | Path to the PEM private key, if it is in a separate file. |
+| `ca_bundle`   | Path to a PEM file with your company's CA certificate(s), if the Gitea server certificate is issued by a private CA. It is added to the system CAs. |
+
+`~` is expanded. These variables are marked "don't export", so they are not included if you share the workflow.
+
+If the private key is encrypted, store its passphrase in the Keychain with `tea set certpass` (a hidden dialog opens; submit an empty value to remove it).
+
+If your certificate comes as a `.p12`/`.pfx` file, convert it to PEM first, e.g.:
+
+```sh
+openssl pkcs12 -in client.p12 -out ~/.config/gitea/client.pem   # key stays encrypted -> use `tea set certpass`
+chmod 600 ~/.config/gitea/client.pem
+```
+
+Connection or certificate problems are shown as the first result of `tea <query>` ("Error updating project list").
+Note that the repos are opened in your browser, which needs the client certificate itself (e.g. imported into the Keychain).
 
 **Python3 and macOS > 12.3**
 
@@ -54,10 +83,17 @@ Note however that this will not allow selecting a specific location (repo, setti
 ### Starting fresh
 
 If you want to reset the learned behavior or switch to a new Gitea instance, call `tea reset`.
-This will delete the cache, access token and the URL.
+This will delete the cache, the URL and the secrets stored in the Keychain (access token and client key passphrase).
+The client certificate variables are kept.
 
 If you **only** want to delete the repo cache, call `tea clearcache`.
 This will keep the URL and API key set and only invalidate the repo cache.
+
+## Security notes
+
+- Self-update from the upstream GitHub repository is disabled, as it would download and install unsigned code and overwrite this customised version. Rebuild with `./build.sh` instead.
+- Only `https://` Gitea URLs are accepted, TLS certificates and host names are always verified, and TLS < 1.2 is refused.
+- Repository links are only shown if they point to the configured Gitea instance.
 
 ## Acknowledgment
 

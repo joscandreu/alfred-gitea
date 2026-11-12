@@ -1,79 +1,97 @@
 # encoding: utf-8
-# from __future__ import unicode_literals
 import sys
 import argparse
-from workflow import Workflow3, ICON_WEB, ICON_ERROR, ICON_WARNING, ICON_INFO, web, PasswordNotFound, util
+from workflow import Workflow3, ICON_ERROR, ICON_WARNING, ICON_INFO
 from workflow.background import run_in_background, is_running
-from workflow.util import run_command
-# install into workflow folder via pip install --target=. requests
-import requests
-from thumbnails import Thumbs
+
+import gitea_common as gc
 
 log = None
 
 
 def search_for_project(project):
     """Generate a string search key for a project"""
-    elements = []
-    elements.append(project['full_name'])
-    elements.append(project['description'])
-    return u' '.join(elements)
+    return u' '.join([project.get('full_name') or '', project.get('description') or ''])
+
+
+def set_secret(wf, account, value, prompt, label):
+    """Store a secret from the CLI argument or, if empty, a hidden dialog.
+
+    Prints a status message, which Alfred shows as notification text.
+    """
+    if not value:
+        value = gc.prompt_hidden(prompt)
+    if value is None:
+        print('Cancelled, {} not changed.'.format(label))
+        return 0
+    value = value.strip()
+    if not value:
+        gc.delete_secret(wf, account)
+        print('{} removed.'.format(label))
+        return 0
+    gc.save_secret(wf, account, value)
+    log.info('Saved %s', label)
+    print('{} saved to Keychain.'.format(label))
+    return 0
 
 
 def main(wf):
-    # build argument parser to parse script args and collect their
-    # values
     parser = argparse.ArgumentParser()
-    # add an optional (nargs='?') --setkey argument and save its
-    # value to 'apikey' (dest). This will be called from a separate "Run Script"
-    # action with the API key
-    parser.add_argument('--setkey', dest='apikey', nargs='?', default=None)
-    parser.add_argument('--seturl', dest='apiurl', nargs='?', default=None)
+    # `nargs='?', const=''` so that `--setkey` without value opens a dialog
+    parser.add_argument('--setkey', dest='apikey', nargs='?', const='', default=None)
+    parser.add_argument('--setcertpass', dest='certpass', nargs='?', const='', default=None)
+    parser.add_argument('--seturl', dest='apiurl', nargs='?', const='', default=None)
     parser.add_argument('query', nargs='?', default=None)
-    # parse the script's arguments
     args = parser.parse_args(wf.args)
 
     ####################################################################
-    # Save the provided API key or URL
+    # Settings actions (called from "Run Script" actions)
     ####################################################################
 
-    # decide what to do based on arguments
-    if args.apikey:  # Script was passed an API key
-        log.info("Setting API Key")
-        wf.save_password('gitea_api_key', args.apikey)
-        return 0  # 0 means script exited cleanly
+    if args.apikey is not None:
+        return set_secret(wf, gc.API_KEY_ACCOUNT, args.apikey,
+                          'Gitea access token:', 'Access token')
+
+    if args.certpass is not None:
+        return set_secret(wf, gc.CERT_PASS_ACCOUNT, args.certpass,
+                          'Passphrase of the client certificate private key '
+                          '(leave empty to remove):', 'Client key passphrase')
+
+    if args.apiurl is not None:
+        try:
+            base_url = gc.normalize_base_url(args.apiurl)
+        except gc.ConfigError as e:
+            print('Invalid URL: {}'.format(e))
+            return 0
+        if wf.settings.get('base_url') != base_url:
+            wf.settings['base_url'] = base_url
+            wf.settings['api_url'] = base_url + gc.API_SEARCH_PATH
+            # Never show repos from a previous instance
+            wf.clear_cache()
+        log.info('Gitea URL set to %s', base_url)
+        print('Gitea URL set to {}'.format(base_url))
+        return 0
 
     ####################################################################
-    # Check that we have an API key saved
+    # Check configuration
     ####################################################################
 
-    try:
-        wf.get_password('gitea_api_key')
-    except PasswordNotFound:  # API key has not yet been set
+    if not gc.get_secret(wf, gc.API_KEY_ACCOUNT):
         wf.add_item('No API key set',
-                    'Please use `tea set key` to set your Gitea API key.',
+                    'Please use `tea set token` to set your Gitea access token.',
                     valid=False,
                     icon=ICON_ERROR)
         wf.send_feedback()
         return 0
 
-    ####################################################################
-    # Check for the URL
-    ####################################################################
-
-    log.info(args.apiurl)
-    # if user passed a new URL
-    if args.apiurl:
-        wf.settings['base_url'] = args.apiurl
-        wf.settings['api_url'] = args.apiurl + "/api/v1/repos/search"
-    # if not yet set, fall back to try.gitea.io
-    elif not wf.settings.get('base_url'):
-        wf.settings['base_url'] = 'https://try.gitea.io'
-        wf.settings['api_url'] = 'https://try.gitea.io/api/v1/repos/search'
+    base_url = gc.get_base_url(wf)
+    if not base_url:
+        wf.add_item('No Gitea URL set',
+                    'Please use `tea set url https://<host>` to set your Gitea URL.',
+                    valid=False,
+                    icon=ICON_ERROR)
+        wf.send_feedback()
         return 0
-
-    log.debug("Setting API URL to {url}".format(
-        url=wf.settings.get('api_url')))
 
     ####################################################################
     # View/filter gitea Projects
@@ -81,16 +99,14 @@ def main(wf):
 
     query = args.query
 
-    projects_gitea = wf.cached_data('projects_gitea', None, max_age=0)
+    projects_gitea = wf.cached_data(gc.CACHE_KEY, None, max_age=0)
+    update_error = wf.cached_data(gc.ERROR_CACHE_KEY, None, max_age=0)
 
-    # log.debug('XXX %s', projects_gitea)
-
-    if wf.update_available:
-        # Add a notification to top of Script Filter results
-        wf.add_item('New version available',
-                    'Action this item to install the update',
-                    autocomplete='workflow:update',
-                    icon=ICON_INFO)
+    if update_error:
+        wf.add_item('Error updating project list',
+                    update_error,
+                    valid=False,
+                    icon=ICON_ERROR)
 
     # Notify the user if the cache is being updated
     if is_running('update') and not projects_gitea:
@@ -102,12 +118,14 @@ def main(wf):
                     icon=ICON_INFO)
 
     # Start update script if cached data is too old (or doesn't exist)
-    if not wf.cached_data_fresh('projects_gitea', max_age=1) and not is_running('update'):
+    if not wf.cached_data_fresh(gc.CACHE_KEY, max_age=gc.CACHE_MAX_AGE) and not is_running('update'):
         cmd = ['/usr/bin/python3', wf.workflowfile('update.py')]
         run_in_background('update', cmd)
-        # foreground for debugging
-        # run_command(cmd)
         wf.rerun = 0.5
+
+    # Only offer repos whose URL points to the configured instance
+    projects_gitea = [p for p in (projects_gitea or [])
+                      if gc.is_url_on_instance(p.get('html_url'), base_url)]
 
     # If script was passed a query, use it to filter projects
     if query and projects_gitea:
@@ -115,49 +133,31 @@ def main(wf):
             query, projects_gitea, key=search_for_project, min_score=20)
 
     if not projects_gitea:  # we have no data to show, so show a warning and stop
-        wf.add_item('No projects found', icon=ICON_WARNING)
+        if not update_error:
+            wf.add_item('No projects found', icon=ICON_WARNING)
         wf.send_feedback()
         return 0
 
-    # log.debug('%s', projects_gitea)
-
-    # Create thumbnails from repo avatars - slow!
-    # thumbs = Thumbs(wf.datafile('thumbs'))
-
-    # Loop through the returned posts and add an item for each to
-    # the list of results for Alfred
     for project in projects_gitea:
-        # icon =
         wf.add_item(title=project['full_name'],
-                    subtitle=project['description'],
+                    subtitle=project.get('description') or '',
                     arg=project['html_url'],
                     valid=True,
-                    # Create thumbnails from repo avatars - slow!
-                    # icon=thumbs.thumbnail(requests.get(project['owner']['avatar_url']).url),
                     icon=wf.workflowfile('gitea-transparent.png'),
                     largetext=project['full_name'],
                     quicklookurl=project['html_url'],
                     copytext=project['html_url'],
-                    uid=project['id'])
+                    uid=str(project['id']))
 
-    # Send the results to Alfred as XML
     wf.send_feedback()
-
-    # Create thumbnails from repo avatars - slow!
-    # thumbs.save_queue()
-    # if thumbs.has_queue:
-    #     thumbs.process_queue()
-    #     if not is_running('generate_thumbnails'):
-    #         run_in_background('generate_thumbnails',
-    #                           ['/usr/bin/python3',
-    #                            wf.workflowfile('thumbnails.py')])
-
-    # return 0
+    return 0
 
 
 if __name__ == u"__main__":
-    wf = Workflow3(update_settings={
-        'github_slug': 'pat-s/alfred-gitea',
-    })
+    # Self-updating from GitHub is intentionally disabled: it would download
+    # and install unsigned code from the (archived) upstream repository and
+    # overwrite this customised version.
+    wf = Workflow3()
+    wf.cache_serializer = gc.CACHE_SERIALIZER
     log = wf.logger
     sys.exit(wf.run(main))
